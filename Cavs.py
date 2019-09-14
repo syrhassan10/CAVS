@@ -57,16 +57,21 @@ def break_distance(velovity_eco_car, acceleration, distance_front):
 
 
 
-from imageai.Detection import ObjectDetection
-import os
+import cv2
+import numpy as np
 
-execution_path = os.getcwd()
-
-detector = ObjectDetection()
-detector.setModelTypeAsRetinaNet()
-detector.setModelPath( os.path.join(execution_path , "resnet50_coco_best_v2.0.1.h5"))
-detector.loadModel()
-detections = detector.detectObjectsFromImage(input_image=os.path.join(execution_path , "image.jpg"), output_image_path=os.path.join(execution_path , "imagenew.jpg"))
-
-for eachObject in detections:
-    print(eachObject["name"] , " : " , eachObject["percentage_probability"] )
+# the bottom 2 lines will work if only we have a video where there are cars
+camera = cv2.VideoCapture ("video.avi")
+camera.open("video.avi")
+car_cascade = cv2.CascadeClassifier('cars.xml')
+while True:
+    (grabbed,frame) = camera.read()
+    grayvideo = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    cars = car_cascade.detectMultiScale(grayvideo, 1.1, 1)
+    for (x,y,w,h) in cars:
+     cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
+     cv2.imshow("video",frame)
+    if cv2.waitKey(1)== ord('q'):
+        break
+camera.release()
+cv2.destroyAllWindows()
