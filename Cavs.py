@@ -5,12 +5,11 @@ import cv2
 
 #global
 can_break = True
-cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
 #lane detecting module
 def canny(image):
     gray_scale = cv2.cvtColor(lane_image, cv2.COLOR_RGB2GRAY)
-    blur = cv2.GaussianBlur(gray_scale, (5,5), 0)
+    blur = cv2.GaussainBlur(gray_scale, (5,5), 0)
     canny = cv2.Canny(blur, 50, 150)
     return canny
 
@@ -28,9 +27,7 @@ def display_lines(image, lines):
 
 def region_of_interest(image):
     height = image.shape[0]
-    polygons = np.array([
-    [(200, height), (1100, height), (550, 250)]
-    ])
+    polygons = np.array([(200, height), (1100, height), (550, 250)])
     mask = np.zeros_like(image)
     cv2.fillPoly(mask, polygons, 255)
     masked_image = cv2.bitwise_and(canny, mask)
@@ -42,8 +39,8 @@ canny = canny(lane_image)
 cropped_image = region_of_interest(canny)
 lines = cv2.HoughLinesP(cropped_image, 2, np.pi/180, 100, np.array([]), minLineLength= 40, maxLineGap=5)
 line_image = display_lines(lane_image, lines)
-combo_image = cv2.addWeighted(lane_image, 0.8, line_image, 1, 1)
-cv2.imshow("result", combo_image)
+combo_image = cv2.addWeighted(lane_image, 0.8)
+cv2.imshow("result", cropped_image)
 cv2.waitKey(0)
 plt.imshow(canny)
 plt.show(0)
@@ -60,31 +57,16 @@ def break_distance(velovity_eco_car, acceleration, distance_front):
 
 
 
-# capture frames from a video(if we dont have any video we can remove this line)
-cap = cv2.VideoCapture('video.avi') 
-  
-# Trained XML classifiers describes some features of some object we want to detect 
-car_cascade = cv2.CascadeClassifier('cars.xml') 
-  
-# loop runs if capturing has been initialized. 
-while True: 
-    # reads frames from a video 
-    ret, frames = cap.read() 
-      
-    # convert to gray scale of each frames 
-    gray = cv2.cvtColor(frames, cv2.COLOR_BGR2GRAY) 
-      
-  
-    # Detects cars of different sizes in the input image 
-    cars = car_cascade.detectMultiScale(gray, 1.1, 1) 
-      
-    # To draw a rectangle in each cars 
-    for (x,y,w,h) in cars: 
-        cv2.rectangle(frames,(x,y),(x+w,y+h),(0,0,255),2) 
-  
-   # Display frames in a window  
-   cv2.imshow('video2', frames) 
-      
-    # Wait for Esc key to stop(if we are not using a video this line can also be removed) 
-    if cv2.waitKey(33) == 27: 
-        break
+from imageai.Detection import ObjectDetection
+import os
+
+execution_path = os.getcwd()
+
+detector = ObjectDetection()
+detector.setModelTypeAsRetinaNet()
+detector.setModelPath( os.path.join(execution_path , "resnet50_coco_best_v2.0.1.h5"))
+detector.loadModel()
+detections = detector.detectObjectsFromImage(input_image=os.path.join(execution_path , "image.jpg"), output_image_path=os.path.join(execution_path , "imagenew.jpg"))
+
+for eachObject in detections:
+    print(eachObject["name"] , " : " , eachObject["percentage_probability"] )
