@@ -46,11 +46,37 @@ plt.imshow(canny)
 plt.show(0)
 
 
-def break_distance(velovity_eco_car, acceleration, distance_front):
+def break_distance(velovity_eco_car, acceleration, distance_front, current_wheel_rotations):
 
     break_d = -(math.sqrt(velovity_eco_car))/(2*acceleration)
     if distance_front > break_d:
         can_break = True
+        pid_straight_distance(1,1,1, break_d,distance_front,current_wheel_rotations) #call the following function. kp kd ki can be tuned with further testing
     elif distance_front <= break_d:
         can_break = False
     return can_break
+
+def pd_straight_distance(kp, ki, kd, break_distance, current_distance_front,current_wheel_rotations):
+    previous_error = 0
+    wheelDiameter = 1 #assume wheel diamter is 1 meter
+    integral = 0
+    required_wheel_rotations = break_distance/ (wheelDiameter * 3.14)
+    reset_currentWheelRotation = True #resests our current reading of wheel rotation to 0
+    while(current_wheel_rotations <= required_wheel_rotations): #keeps running until distance front = breaking distance
+         #calculates the amount of distance needed to reach breaking distance
+        error = break_distance - current_distance_front #set point = breaking distance (desired front distance)
+        propotional = error *kp 
+        # since the error is propotional to the correction, the greater the error the greater the correction (thus faster) 
+        #thus we can introduce a constant which is used to scale up or down our error. (if kp is too high, vehicle may overshoot)
+        deltaError = error - previous_error
+        derivative  = deltaError*kd 
+        #the job of the derivative is to slow down the rate of change in error over time. 
+        # this is used to smooth our correction i.e. overshoot less(since derivative is the rate of change)
+        if ((error >= 0) & (break_distance > current_distance_front)): #if true you can speed up. gas throttle will be controlled using a seperate servo motor
+            gas_servo_motor = derivative + propotional
+        else: #otherwise we need to slow down. break throttle will be controlled using a seperate servo motor
+            breaking_servo_motor = derivative + propotional
+        
+
+
+
