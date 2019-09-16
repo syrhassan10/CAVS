@@ -51,7 +51,7 @@ def break_distance(velovity_eco_car, acceleration, distance_front, current_wheel
     break_d = -(math.sqrt(velovity_eco_car))/(2*acceleration)
     if distance_front > break_d:
         can_break = True
-        pid_straight_distance(1,1,1, break_d,distance_front,current_wheel_rotations) #call the following function. kp kd ki can be tuned with further testing
+        pd_straight_distance(1,1,1, break_d,distance_front,current_wheel_rotations) #call the following function. kp kd ki can be tuned with further testing
     elif distance_front <= break_d:
         can_break = False
     return can_break
@@ -79,11 +79,6 @@ def pd_straight_distance(kp, ki, kd, break_distance, current_distance_front,curr
         
 
 
-
-
-
-import cv2
-import numpy as np
 
 # the bottom 2 lines will work if only we have a video where there are cars
 camera = cv2.VideoCapture ("video.avi")
